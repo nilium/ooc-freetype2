@@ -1,4 +1,5 @@
 use freetype2
+include freetype/ftsystem
 include freetype/ftglyph
 include freetype/ftsizes
 include freetype/fttypes
@@ -160,9 +161,33 @@ FTFaceInternal: cover from FT_Face_Internal
 
 FT26Dot6: cover from FT_F26Dot6 extends Long
 
-FTMemory: cover from FT_Memory
+FTMemoryRec: cover from struct FT_MemoryRec_ {
+    user: Pointer
+    alloc: Func (FTMemory, Long) -> Pointer
+    free: Func (FTMemory, Pointer)
+    realloc: Func (FTMemory, Long, Long, Pointer) -> Pointer
+}
 
-FTStream: cover from FT_Stream
+FTMemory: cover from FTMemoryRec*
+
+FTStreamDesc: cover from FT_StreamDesc {
+    value: extern Long
+    pointer: extern Pointer
+}
+
+FTStreamRec: cover from FT_StreamRec {
+    base: extern UChar*
+    size, pos: extern ULong
+    
+    descriptor, pathname: extern FTStreamDesc
+    read: extern Func (FTStream, ULong, UChar*, ULong) -> ULong
+    close: extern Func (FTStream)
+    
+    memory: extern FTMemory
+    cursor, limit: extern UChar*
+}
+
+FTStream: cover from FTStreamRec*
 
 FTListNodeRec: cover from FT_ListNodeRec {
     prev, next: extern FTListNode
