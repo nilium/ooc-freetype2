@@ -1,0 +1,6 @@
+Name: FreeType
+Description: Library to easily work with fonts
+Pkgs: freetype2
+Version: 2.3.12
+SourcePath: .
+Includes: ft2build.h, freetype/freetype.h
