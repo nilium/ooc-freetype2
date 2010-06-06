@@ -1,4 +1,10 @@
 use freetype2
+include freetype/ftglyph
+include freetype/ftsizes
+include freetype/fttypes
+include freetype/ftlist
+include freetype/fttrigon
+include freetype/ftbitmap
 
 FTEncoding: extern(FT_Encoding) enum {
     /* deprecated values have been exlcuded */
@@ -134,6 +140,14 @@ FTFSTypeFlag: enum {
     bitmapEmbeddingOnly: extern(FT_FSTYPE_BITMAP_EMBEDDING_ONLY)
 }
 
+FTGlyphBBoxMode: extern(FT_Glyph_BBox_Mode) enum {
+    unscaled: extern(FT_GLYPH_BBOX_UNSCALED)
+    subpixels: extern(FT_GLYPH_BBOX_SUBPIXELS)
+    gridfit: extern(FT_GLYPH_BBOX_GRIDFIT)
+    truncate: extern(FT_GLYPH_BBOX_TRUNCATE)
+    pixels: extern(FT_GLYPH_BBOX_PIXELS)
+}
+
 FTOutline: cover from FT_Outline
 
 FTModule: cover from FT_Module
@@ -150,7 +164,26 @@ FTMemory: cover from FT_Memory
 
 FTStream: cover from FT_Stream
 
-FTListRec: cover from FT_ListRec
+FTListNodeRec: cover from FT_ListNodeRec {
+    prev, next: extern FTListNode
+    data: extern Pointer
+}
+
+FTListNode: cover from FTListNodeRec*
+
+FTListRec: cover from FT_ListRec {
+    head, tail: extern FTListNode
+}
+
+FTList: cover from FTListRec* {
+    find: extern(FT_List_Find) func (data: Pointer) -> FTListNode
+    add: extern(FT_List_Add) func (node: FTListNode)
+    insert: extern(FT_List_Insert) func (node: FTListNode)
+    remove: extern(FT_List_Remove) func (node: FTListNode)
+    up: extern(FT_List_Up) func (node: FTListNode)
+    iterate: extern(FT_List_Iterate) func (iterator: Func(FTListNode, Pointer) -> Int, user: Pointer) -> Int
+    finalize: extern(FT_List_Finalize) func (destroy: Func(FTMemory, Pointer, Pointer), memory: FTMemory, user: Pointer)
+}
 
 FTFWord: cover from FT_FWord extends Short
 
@@ -186,11 +219,29 @@ FTOpenArgs: cover from FT_Open_Args {
     params: FTParameter
 }
 
-FTPos: cover from FT_Pos extends Long {
+FTFixed: cover from FT_Fixed extends Long {
+    round: extern(FT_RoundFix) func -> FTFixed
+    ceil: extern(FT_CeilFix) func -> FTFixed
+    floor: extern(FT_FloorFix) func -> FTFixed
+    multiply: extern(FT_MulFix) func (b: FTFixed) -> FTFixed
+    divide: extern(FT_DivFix) func (b: FTFixed) -> FTFixed
     
+    sin: extern(FT_Sin) func -> FTFixed
+    cos: extern(FT_Cos) func -> FTFixed
+    tan: extern(FT_Tan) func -> FTFixed
+    atan2: static extern(FT_Atan2) func(x, y: FTFixed) -> FTFixed
+    angleDiff: extern(FT_Angle_Diff) func(angel2: FTFixed) -> FTFixed
+    
+    pi: static extern(FT_ANGLE_PI) const FTFixed
+    twoPi: static extern(FT_ANGLE_2PI) const FTFixed
+    piOverTwo: static extern(FT_ANGLE_PI2) const FTFixed
+    piOverFour: static extern(FT_ANGLE_PI4) const FTFixed
 }
 
-FTFixed: cover from FT_Fixed extends Long {
+operator * (l, r: FTFixed) -> FTFixed { l multiply(r) }
+operator / (l, r: FTFixed) -> FTFixed { l divide(r) }
+
+FTPos: cover from FT_Pos extends Long {
     
 }
 
@@ -208,6 +259,8 @@ FTData: cover from FT_Data {
 }
 
 FTBitmap: cover from FT_Bitmap {
+    init: extern(FT_Bitmap_New) func@
+    
     rows, width, pitch: extern Int
     buffer: extern UChar*
     num_grays: extern Short
@@ -238,10 +291,20 @@ FTBBox: cover from FT_BBox {
 
 FTVector: cover from FT_Vector {
     x, y: extern FTPos
+    
+    transform: extern(FT_Vector_Transform) func@
+    unit: extern(FT_Vector_Unit) func@ (angle: FTFixed)
+    rotate: extern(FT_Vector_Rotate) func@ (angle: FTFixed)
+    length: extern(FT_Vector_Length) func@ -> FTFixed
+    polarize: extern(FT_Vector_Polarize) func@ (length, angle: FTFixed*)
+    fromPolar: extern(FT_Vector_From_Polar) func@ (length, angle: FTFixed)
 }
 
 FTMatrix: cover from FT_Matrix {
     xx, xy, yx, yy: extern FTFixed
+    
+    multiply: extern(FT_Matrix_Multiply) func@ (b: FTMatrix*)
+    invert: extern(FT_Matrix_Invert) func@ -> Int
 }
 
 FTGeneric: cover from FT_Generic {
@@ -262,7 +325,10 @@ FTSizeRec: cover from FT_SizeRec {
     internal: FTSizeInternal
 }
 
-FTSize: cover from FTSizeRec*
+FTSize: cover from FTSizeRec* {
+    done: extern(FT_Done_Size) func -> Int
+    activate: extern(FT_Activate_Size) func -> Int
+}
 
 FTGlyphSlotRec: cover from FT_GlyphSlotRec {
     library: extern FTLibrary
@@ -290,7 +356,9 @@ FTGlyphSlotRec: cover from FT_GlyphSlotRec {
 }
 
 FTGlyphSlot: cover from FT_GlyphSlotRec* {
-    render: extern(FT_Render_Glyph) func(render_mode: FTRenderMode) -> Int
+    render: extern(FT_Render_Glyph) func (render_mode: FTRenderMode) -> Int
+    getGlyph: extern(FT_Get_Glyph) func (aglyph: FTGlyph*) -> Int
+    ownBitmap: extern(FT_GlyphSlot_Own_Bitmap) func -> Int
 }
 
 FTLibrary: cover from FT_Library {
@@ -302,6 +370,11 @@ FTLibrary: cover from FT_Library {
     newFace: extern(FT_New_Face) func (filepathname: const String, face_index: Long, aface: FTFace*) -> Int
     newMemoryFace: extern(FT_New_Face_Memory) func (file_base: const UChar*, file_size: Long, face_index: Long, aface: FTFace*) -> Int
     openFace: extern(FT_Open_Face) func (args: const FTOpenArgs*, face_index: Long, face: FTFace*) -> Int
+    
+    copyBitmap: extern(FT_Bitmap_Copy) func (source: const FTBitmap*, target: FTBitmap*) -> Int
+    emboldenBitmap: extern(FT_Bitmap_Embolden) func (bitmap: FTBitmap*, xStrenght, yStrength: FTPos) -> Int
+    convertBitmap: extern(FT_Bitmap_Convert) func (source: const FTBitmap*, target: FTBitmap*, alignment: Int) -> Int
+    destroyBitmap: extern(FT_Bitmap_Done) func (bitmap: FTBitmap*) -> Int
 }
 
 FTFaceRec: cover from FT_FaceRec {
@@ -363,6 +436,8 @@ FTFace: cover from FTFaceRec* {
     getVariantSelectors: extern(FT_Face_GetVariantsOfChar) func (charcode: ULong) -> UInt32*
     getVariantSelectors: extern(FT_Face_GetCharsOfVariant) func (variant: ULong) -> UInt32*
     
+    newSize: extern(FT_New_Size) func (size: FTSize*) -> Int
+    
     hasHorizontal?: extern(FT_HAS_HORIZONTAL) func -> Bool
     hasVertical?: extern(FT_HAS_HORIZONTAL) func -> Bool
     hasKerning?: extern(FT_HAS_HORIZONTAL) func -> Bool
@@ -395,8 +470,29 @@ FTGlyphRec: cover from FT_GlyphRec {
 }
 
 FTGlyph: cover from FTGlyphRec* {
-    
+    copy: extern(FT_Glyph_Copy) func (target: FTGlyph*) -> Int
+    transform: extern(FT_Glyph_Transform) func (matrix: FTMatrix*, delta: FTVector*) -> Int
+    getCBox: extern(FT_Glyph_Get_CBox) func (bbox_mode: FTGlyphBBoxMode, acbox: FTBBox*)
+    toBitmap: extern(FT_Glyph_To_Bitmap) func@ (render_mode: FTRenderMode, origin: FTVector*, destroy: Bool) -> Int
+    done: extern(FT_Done_Glyph) func
 }
+
+FTBitmapGlyphRec: cover from FT_BitmapGlyphRec {
+    root: extern FTGlyphRec
+    left, top: extern Int
+    bitmap: extern FTBitmap
+}
+
+FTBitmapGlyph: cover from FTBitmapGlyphRec* extends FTGlyph
+
+FTOutlineGlyphRec: cover from FT_OutlineGlyphRec {
+    root: FTGlyphRec
+    outline: FTOutline
+}
+
+FTOutlineGlyph: cover from FTOutlineGlyphRec* extends FTGlyph
 
 //ftEncTag: extern(FT_ENC_TAG) func (value, a, b, c, d: UInt32)
 
+// computations
+ftMulDiv: extern(FT_MulDiv) func (a, b, c: Long) -> Long
