@@ -387,5 +387,16 @@ FTCharMap: cover from FTCharMapRec* {
     getIndex: extern(FT_Get_Charmap_Index) func -> Int
 }
 
+FTGlyphRec: cover from FT_GlyphRec {
+    library: extern FTLibrary
+    clazz: extern Pointer
+    format: extern FTGlyphFormat
+    advance: extern FTVector
+}
+
+FTGlyph: cover from FTGlyphRec* {
+    
+}
+
 //ftEncTag: extern(FT_ENC_TAG) func (value, a, b, c, d: UInt32)
 
