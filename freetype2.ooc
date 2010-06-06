@@ -357,6 +357,11 @@ FTFace: cover from FTFaceRec* {
     getSubGlyphInfo: extern(FT_Get_SubGlyph_Info) func (sub_index: UInt, p_index: Int*, p_flags: FTSubGlyphFlag*, p_arg1, p_arg2: Int*, p_transform: FTMatrix*) -> Int
     getFSTypeFlags: extern(FT_Get_FSType_Flags) func -> FTFSTypeFlag
     
+    getCharVariantIndex: extern(FT_Face_GetCharVariantIndex) func (charcode, variantSelector: ULong) -> UInt
+    getCharVariantIsDefault: extern(FT_Face_GetCharVariantIsDefault) func (charcode, variantSelector: ULong) -> Int
+    getVariantSelectors: extern(FT_Face_GetVariantSelectors) func -> UInt32*
+    getVariantSelectors: extern(FT_Face_GetVariantsOfChar) func (charcode: ULong) -> UInt32*
+    getVariantSelectors: extern(FT_Face_GetCharsOfVariant) func (variant: ULong) -> UInt32*
     
     hasHorizontal?: extern(FT_HAS_HORIZONTAL) func -> Bool
     hasVertical?: extern(FT_HAS_HORIZONTAL) func -> Bool
