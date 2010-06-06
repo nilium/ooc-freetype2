@@ -115,13 +115,26 @@ FTKerningMode: extern(FT_Kerning_Mode) enum {
     unscaled: extern(FT_KERNING_UNSCALED)
 }
 
-FTOutline: cover from FT_Outline
-
-FTSize: cover from FTSizeRec*
-
-FTGlyphSlot: cover from FT_GlyphSlotRec* {
-    render: extern(FT_Render_Glyph) func(render_mode: FTRenderMode) -> Int
+FTSubGlyphFlag: enum {
+    argsAreWords: extern(FT_SUBGLYPH_FLAG_ARGS_ARE_WORDS)
+    argsAreXYValues: extern(FT_SUBGLYPH_FLAG_ARGS_ARE_XY_VALUES)
+    roundXYToGrid: extern(FT_SUBGLYPH_FLAG_ROUND_XY_TO_GRID)
+    Scale: extern(FT_SUBGLYPH_FLAG_SCALE)
+    xyScale: extern(FT_SUBGLYPH_FLAG_XY_SCALE)
+    twoByTwo: extern(FT_SUBGLYPH_FLAG_2X2)
+    useMyMetrics: extern(FT_SUBGLYPH_FLAG_USE_MY_METRICS)
 }
+
+FTFSTypeFlag: enum {
+    installableEmbedding: extern(FT_FSTYPE_INSTALLABE_EMBEDDING)
+    restrictedLicenseEmbedding: extern(FT_FSTYPE_RESTRICTED_LICENSE_EMBEDDING)
+    previewAndPrintEmbedding: extern(FT_FSTYPE_PREVIEW_AND_PRINT_EMBEDDING)
+    editableEmbedding: extern(FT_FSTYPE_EDITABLE_EMBEDDING)
+    noSubsetting: extern(FT_FSTYPE_NO_SUBSETTING)
+    bitmapEmbeddingOnly: extern(FT_FSTYPE_BITMAP_EMBEDDING_ONLY)
+}
+
+FTOutline: cover from FT_Outline
 
 FTModule: cover from FT_Module
 
@@ -215,13 +228,6 @@ FTBitmapSize: cover from FT_Bitmap_Size {
     x_ppem, y_ppem: extern FTPos
 }
 
-
-FTCharMapRec: cover from FT_CharMapRec {
-    face: extern FTFace
-    encoding: extern FTEncoding
-    platform_id, encoding_id: extern UShort
-}
-
 FTUnitVector: cover from FT_UnitVector {
     x, y: extern FTF2Dot14
 }
@@ -256,6 +262,8 @@ FTSizeRec: cover from FT_SizeRec {
     internal: FTSizeInternal
 }
 
+FTSize: cover from FTSizeRec*
+
 FTGlyphSlotRec: cover from FT_GlyphSlotRec {
     library: extern FTLibrary
     face: extern FTFace
@@ -281,6 +289,10 @@ FTGlyphSlotRec: cover from FT_GlyphSlotRec {
     internal: extern FTSlotInternal
 }
 
+FTGlyphSlot: cover from FT_GlyphSlotRec* {
+    render: extern(FT_Render_Glyph) func(render_mode: FTRenderMode) -> Int
+}
+
 FTLibrary: cover from FT_Library {
     version: extern(FT_Library_Version) func (amajor, aminor, apatch: Int*)
     
@@ -290,29 +302,6 @@ FTLibrary: cover from FT_Library {
     newFace: extern(FT_New_Face) func (filepathname: const String, face_index: Long, aface: FTFace*) -> Int
     newMemoryFace: extern(FT_New_Face_Memory) func (file_base: const UChar*, file_size: Long, face_index: Long, aface: FTFace*) -> Int
     openFace: extern(FT_Open_Face) func (args: const FTOpenArgs*, face_index: Long, face: FTFace*) -> Int
-}
-
-FTFace: cover from FTFaceRec* {
-    attachFile: extern(FT_Attach_File) func (filepathname: const String) -> Int
-    attachStream: extern(FT_Attach_Stream) func (parameters: FTOpenArgs*)
-    done: extern(FT_Done_Face) func -> Int
-    selectSize: extern(FT_Select_Size) func (strike_index: Int) -> Int
-    requestSize: extern(FT_Request_Size) func (req: FTSizeRequest) -> Int
-    setCharSize: extern(FT_Set_Char_Size) func (char_width, char_height: FTF26Dot6, horz_resolution, vert_resolution: UInt) -> Int
-    setPixelSizes: extern(FT_Set_Pixel_Sizes) func (pixel_width, pixel_height: UInt) -> Int
-    loadGlyph: extern(FT_Load_Glyph) func (glyph_index: UInt, load_flags: FTLoadFlag) -> Int
-    loadChar: extern(FT_Load_Char) func (char_code: ULong, load_flags: FTLoadFlag) -> Int
-    setTransform: extern(FT_Set_Transform) func (matrix: FTMatrix*, delta: FTVector*)
-    getKerning: extern(FT_Get_Kerning) func (left_glyph, right_glyph: UInt, kern_mode: FTKerningMode, akerning: FTVector*) -> Int
-    getTrackKerning: extern(FT_Get_Track_Kerning) func (point_size: FTFixed, degree: Int, akerning: FTFixed*) -> Int
-    getGlyphName: extern(FT_Get_Glyph_Name) func (glyph_index: UInt, buffer: Pointer, buffer_max: UInt) -> Int
-    getPostscriptName: extern(FT_Get_Postscript_Name) func -> const String
-    selectCharmap: extern(FT_Select_Charmap) func (encoding: FTEncoding) -> Int
-    setCharmap: extern(FT_Set_Charmap) func (encoding: FTEncoding) -> Int
-}
-
-FTCharMap: cover from FTCharMapRec* {
-    getIndex: extern(FT_Get_Charmap_Index) func -> Int
 }
 
 FTFaceRec: cover from FT_FaceRec {
@@ -342,19 +331,55 @@ FTFaceRec: cover from FT_FaceRec {
     autohint: extern FTGeneric
     extensions: extern Pointer
     internal: extern FTFaceInternal
+}
+
+FTFace: cover from FTFaceRec* {
+    attachFile: extern(FT_Attach_File) func (filepathname: const String) -> Int
+    attachStream: extern(FT_Attach_Stream) func (parameters: FTOpenArgs*)
+    done: extern(FT_Done_Face) func -> Int
+    selectSize: extern(FT_Select_Size) func (strike_index: Int) -> Int
+    requestSize: extern(FT_Request_Size) func (req: FTSizeRequest) -> Int
+    setCharSize: extern(FT_Set_Char_Size) func (char_width, char_height: FTF26Dot6, horz_resolution, vert_resolution: UInt) -> Int
+    setPixelSizes: extern(FT_Set_Pixel_Sizes) func (pixel_width, pixel_height: UInt) -> Int
+    loadGlyph: extern(FT_Load_Glyph) func (glyph_index: UInt, load_flags: FTLoadFlag) -> Int
+    loadChar: extern(FT_Load_Char) func (char_code: ULong, load_flags: FTLoadFlag) -> Int
+    setTransform: extern(FT_Set_Transform) func (matrix: FTMatrix*, delta: FTVector*)
+    getKerning: extern(FT_Get_Kerning) func (left_glyph, right_glyph: UInt, kern_mode: FTKerningMode, akerning: FTVector*) -> Int
+    getTrackKerning: extern(FT_Get_Track_Kerning) func (point_size: FTFixed, degree: Int, akerning: FTFixed*) -> Int
+    getGlyphName: extern(FT_Get_Glyph_Name) func (glyph_index: UInt, buffer: Pointer, buffer_max: UInt) -> Int
+    getPostscriptName: extern(FT_Get_Postscript_Name) func -> const String
+    selectCharmap: extern(FT_Select_Charmap) func (encoding: FTEncoding) -> Int
+    setCharmap: extern(FT_Set_Charmap) func (encoding: FTEncoding) -> Int
+    getCharIndex: extern(FT_Get_Char_Index) func (charcode: ULong) -> UInt
+    getFirstChar: extern(FT_Get_First_Char) func (agindex: UInt*) -> ULong
+    getNextChar: extern(FT_Get_Next_Char) func (char_code: ULong, agindex: UInt*) -> ULong
+    getNameIndex: extern(FT_Get_Name_Index) func (glyph_name: String) -> UInt
+    getSubGlyphInfo: extern(FT_Get_SubGlyph_Info) func (sub_index: UInt, p_index: Int*, p_flags: FTSubGlyphFlag*, p_arg1, p_arg2: Int*, p_transform: FTMatrix*) -> Int
+    getFSTypeFlags: extern(FT_Get_FSType_Flags) func -> FTFSTypeFlag
     
-    hasHorizontal?: extern(FT_HAS_HORIZONTAL) func@ -> Bool
-    hasVertical?: extern(FT_HAS_HORIZONTAL) func@ -> Bool
-    hasKerning?: extern(FT_HAS_HORIZONTAL) func@ -> Bool
-    isScalable?: extern(FT_IS_SCALABLE) func@ -> Bool
-    isSFNT?: extern(FT_IS_SFNT) func@ -> Bool
-    isFixedWidth?: extern(FT_IS_FIXED_WIDTH) func@ -> Bool
-    hasFixedSizes?: extern(FT_HAS_FIXED_SIZES) func@ -> Bool
-    hasFastGlyphs?: extern(FT_HAS_FAST_GLYPHS) func@ -> Bool
-    hasGlyphNames?: extern(FT_HAS_GLYPH_NAMES) func@ -> Bool
-    hasMultipleMasters?: extern(FT_HAS_MULTIPLE_MASTERS) func@ -> Bool
-    isCIDKeyed?: extern(FT_IS_CID_KEYED) func@ -> Bool
-    isTricky?: extern(FT_IS_TRICKY) func@ -> Bool
+    
+    hasHorizontal?: extern(FT_HAS_HORIZONTAL) func -> Bool
+    hasVertical?: extern(FT_HAS_HORIZONTAL) func -> Bool
+    hasKerning?: extern(FT_HAS_HORIZONTAL) func -> Bool
+    isScalable?: extern(FT_IS_SCALABLE) func -> Bool
+    isSFNT?: extern(FT_IS_SFNT) func -> Bool
+    isFixedWidth?: extern(FT_IS_FIXED_WIDTH) func -> Bool
+    hasFixedSizes?: extern(FT_HAS_FIXED_SIZES) func -> Bool
+    hasFastGlyphs?: extern(FT_HAS_FAST_GLYPHS) func -> Bool
+    hasGlyphNames?: extern(FT_HAS_GLYPH_NAMES) func -> Bool
+    hasMultipleMasters?: extern(FT_HAS_MULTIPLE_MASTERS) func -> Bool
+    isCIDKeyed?: extern(FT_IS_CID_KEYED) func -> Bool
+    isTricky?: extern(FT_IS_TRICKY) func -> Bool
+}
+
+FTCharMapRec: cover from FT_CharMapRec {
+    face: extern FTFace
+    encoding: extern FTEncoding
+    platform_id, encoding_id: extern UShort
+}
+
+FTCharMap: cover from FTCharMapRec* {
+    getIndex: extern(FT_Get_Charmap_Index) func -> Int
 }
 
 //ftEncTag: extern(FT_ENC_TAG) func (value, a, b, c, d: UInt32)
