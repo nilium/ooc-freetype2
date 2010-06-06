@@ -123,8 +123,6 @@ FTGlyphSlot: cover from FT_GlyphSlotRec* {
     render: extern(FT_Render_Glyph) func(render_mode: FTRenderMode) -> Int
 }
 
-FTCharMap: cover from FTCharMapRec*
-
 FTModule: cover from FT_Module
 
 FTDriver: cover from FT_Driver
@@ -189,34 +187,6 @@ FTF2Dot14: cover from FT_F2Dot14 extends Short {
 
 FTF26Dot6: cover from FT_F2Dot14 extends Long {
     
-}
-
-FTLibrary: cover from FT_Library {
-    version: extern(FT_Library_Version) func (amajor, aminor, apatch: Int*)
-    
-    initFreeType: extern(FT_Init_FreeType) func@ -> Int
-    done: extern(FT_Done_FreeType) func -> Int
-    
-    newFace: extern(FT_New_Face) func (filepathname: const String, face_index: Long, aface: FTFace*) -> Int
-    newMemoryFace: extern(FT_New_Face_Memory) func (file_base: const UChar*, file_size: Long, face_index: Long, aface: FTFace*) -> Int
-    openFace: extern(FT_Open_Face) func (args: const FTOpenArgs*, face_index: Long, face: FTFace*) -> Int
-}
-
-FTFace: cover from FTFaceRec* {
-    attachFile: extern(FT_Attach_File) func (filepathname: const String) -> Int
-    attachStream: extern(FT_Attach_Stream) func (parameters: FTOpenArgs*)
-    done: extern(FT_Done_Face) func -> Int
-    selectSize: extern(FT_Select_Size) func (strike_index: Int) -> Int
-    requestSize: extern(FT_Request_Size) func (req: FTSizeRequest) -> Int
-    setCharSize: extern(FT_Set_Char_Size) func (char_width, char_height: FTF26Dot6, horz_resolution, vert_resolution: UInt) -> Int
-    setPixelSizes: extern(FT_Set_Pixel_Sizes) func (pixel_width, pixel_height: UInt) -> Int
-    loadGlyph: extern(FT_Load_Glyph) func (glyph_index: UInt, load_flags: FTLoadFlag) -> Int
-    loadChar: extern(FT_Load_Char) func (char_code: ULong, load_flags: FTLoadFlag) -> Int
-    setTransform: extern(FT_Set_Transform) func (matrix: FTMatrix*, delta: FTVector*)
-    getKerning: extern(FT_Get_Kerning) func (left_glyph, right_glyph: UInt, kern_mode: FTKerningMode, akerning: FTVector*) -> Int
-    getTrackKerning: extern(FT_Get_Track_Kerning) func (point_size: FTFixed, degree: Int, akerning: FTFixed*) -> Int
-    getGlyphName: extern(FT_Get_Glyph_Name) func (glyph_index: UInt, buffer: Pointer, buffer_max: UInt) -> Int
-    getPostscriptName: extern(FT_Get_Postscript_Name) func -> const String
 }
 
 FTData: cover from FT_Data {
@@ -309,6 +279,40 @@ FTGlyphSlotRec: cover from FT_GlyphSlotRec {
     rsb_delta: extern FTPos
     other: extern Pointer
     internal: extern FTSlotInternal
+}
+
+FTLibrary: cover from FT_Library {
+    version: extern(FT_Library_Version) func (amajor, aminor, apatch: Int*)
+    
+    initFreeType: extern(FT_Init_FreeType) func@ -> Int
+    done: extern(FT_Done_FreeType) func -> Int
+    
+    newFace: extern(FT_New_Face) func (filepathname: const String, face_index: Long, aface: FTFace*) -> Int
+    newMemoryFace: extern(FT_New_Face_Memory) func (file_base: const UChar*, file_size: Long, face_index: Long, aface: FTFace*) -> Int
+    openFace: extern(FT_Open_Face) func (args: const FTOpenArgs*, face_index: Long, face: FTFace*) -> Int
+}
+
+FTFace: cover from FTFaceRec* {
+    attachFile: extern(FT_Attach_File) func (filepathname: const String) -> Int
+    attachStream: extern(FT_Attach_Stream) func (parameters: FTOpenArgs*)
+    done: extern(FT_Done_Face) func -> Int
+    selectSize: extern(FT_Select_Size) func (strike_index: Int) -> Int
+    requestSize: extern(FT_Request_Size) func (req: FTSizeRequest) -> Int
+    setCharSize: extern(FT_Set_Char_Size) func (char_width, char_height: FTF26Dot6, horz_resolution, vert_resolution: UInt) -> Int
+    setPixelSizes: extern(FT_Set_Pixel_Sizes) func (pixel_width, pixel_height: UInt) -> Int
+    loadGlyph: extern(FT_Load_Glyph) func (glyph_index: UInt, load_flags: FTLoadFlag) -> Int
+    loadChar: extern(FT_Load_Char) func (char_code: ULong, load_flags: FTLoadFlag) -> Int
+    setTransform: extern(FT_Set_Transform) func (matrix: FTMatrix*, delta: FTVector*)
+    getKerning: extern(FT_Get_Kerning) func (left_glyph, right_glyph: UInt, kern_mode: FTKerningMode, akerning: FTVector*) -> Int
+    getTrackKerning: extern(FT_Get_Track_Kerning) func (point_size: FTFixed, degree: Int, akerning: FTFixed*) -> Int
+    getGlyphName: extern(FT_Get_Glyph_Name) func (glyph_index: UInt, buffer: Pointer, buffer_max: UInt) -> Int
+    getPostscriptName: extern(FT_Get_Postscript_Name) func -> const String
+    selectCharmap: extern(FT_Select_Charmap) func (encoding: FTEncoding) -> Int
+    setCharmap: extern(FT_Set_Charmap) func (encoding: FTEncoding) -> Int
+}
+
+FTCharMap: cover from FTCharMapRec* {
+    getIndex: extern(FT_Get_Charmap_Index) func -> Int
 }
 
 FTFaceRec: cover from FT_FaceRec {
