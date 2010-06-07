@@ -257,6 +257,10 @@ FTFixed: cover from FT_Fixed extends Long {
     atan2: static extern(FT_Atan2) func(x, y: FTFixed) -> FTFixed
     angleDiff: extern(FT_Angle_Diff) func(angel2: FTFixed) -> FTFixed
     
+    toFloat: func -> Float {
+        (this & ~0xFFFF) as Float / 64.0
+    }
+    
     pi: static extern(FT_ANGLE_PI) const FTFixed
     twoPi: static extern(FT_ANGLE_2PI) const FTFixed
     piOverTwo: static extern(FT_ANGLE_PI2) const FTFixed
@@ -266,17 +270,19 @@ FTFixed: cover from FT_Fixed extends Long {
 operator * (l, r: FTFixed) -> FTFixed { l multiply(r) }
 operator / (l, r: FTFixed) -> FTFixed { l divide(r) }
 
-FTPos: cover from FT_Pos extends Long {
-    
-}
-
 FTF2Dot14: cover from FT_F2Dot14 extends Short {
-    
+    toFloat: func -> Float {
+        (this & ~0x3FFF) as Float / 64.0
+    }
 }
 
-FTF26Dot6: cover from FT_F2Dot14 extends Long {
-    
+FTF26Dot6: cover from FT_F26Dot6 extends Long {
+    toFloat: func -> Float {
+        (this & ~0x3F) as Float / 64.0
+    }
 }
+
+FTPos: cover from FT_Pos extends FTF26Dot6
 
 FTData: cover from FT_Data {
     pointer: Pointer
