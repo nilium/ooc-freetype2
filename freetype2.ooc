@@ -380,7 +380,7 @@ FTGlyphSlotRec: cover from FT_GlyphSlotRec {
     internal: extern FTSlotInternal
 }
 
-FTGlyphSlot: cover from FT_GlyphSlotRec* {
+FTGlyphSlot: cover from FTGlyphSlotRec* {
     render: extern(FT_Render_Glyph) func (render_mode: FTRenderMode) -> Int
     getGlyph: extern(FT_Get_Glyph) func (aglyph: FTGlyph*) -> Int
     ownBitmap: extern(FT_GlyphSlot_Own_Bitmap) func -> Int
