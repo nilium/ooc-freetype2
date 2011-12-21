@@ -237,7 +237,7 @@ FTOpenArgs: cover from FT_Open_Args {
     flags: extern FTOpenFlag
     memory_base: extern const UChar*
     memory_size: Long
-    pathname: String
+    pathname: CString
     stream: FTStream
     driver: FTModule
     num_params: Int
@@ -398,7 +398,7 @@ FTLibrary: cover from FT_Library {
     initFreeType: extern(FT_Init_FreeType) func@ -> Int
     done: extern(FT_Done_FreeType) func -> Int
     
-    newFace: extern(FT_New_Face) func (filepathname: const String, face_index: Long, aface: FTFace*) -> Int
+    newFace: extern(FT_New_Face) func (filepathname: const CString, face_index: Long, aface: FTFace*) -> Int
     newMemoryFace: extern(FT_New_Face_Memory) func (file_base: const UChar*, file_size: Long, face_index: Long, aface: FTFace*) -> Int
     openFace: extern(FT_Open_Face) func (args: const FTOpenArgs*, face_index: Long, face: FTFace*) -> Int
     
@@ -413,7 +413,7 @@ FTFaceRec: cover from FT_FaceRec {
     face_flags: extern FTFaceFlag
     style_flags: extern FTStyleFlag
     num_glyphs: extern Long
-    family_name, style_name: extern String
+    family_name, style_name: extern CString
     num_fixed_sizes: extern Int
     available_sizes: extern FTBitmapSize*
     num_charmaps: extern Int
@@ -438,7 +438,7 @@ FTFaceRec: cover from FT_FaceRec {
 }
 
 FTFace: cover from FTFaceRec* {
-    attachFile: extern(FT_Attach_File) func (filepathname: const String) -> Int
+    attachFile: extern(FT_Attach_File) func (filepathname: const CString) -> Int
     attachStream: extern(FT_Attach_Stream) func (parameters: FTOpenArgs*)
     done: extern(FT_Done_Face) func -> Int
     selectSize: extern(FT_Select_Size) func (strike_index: Int) -> Int
@@ -451,13 +451,13 @@ FTFace: cover from FTFaceRec* {
     getKerning: extern(FT_Get_Kerning) func (left_glyph, right_glyph: UInt, kern_mode: FTKerningMode, akerning: FTVector*) -> Int
     getTrackKerning: extern(FT_Get_Track_Kerning) func (point_size: FTFixed, degree: Int, akerning: FTFixed*) -> Int
     getGlyphName: extern(FT_Get_Glyph_Name) func (glyph_index: UInt, buffer: Pointer, buffer_max: UInt) -> Int
-    getPostscriptName: extern(FT_Get_Postscript_Name) func -> const String
+    getPostscriptName: extern(FT_Get_Postscript_Name) func -> const CString
     selectCharmap: extern(FT_Select_Charmap) func (encoding: FTEncoding) -> Int
     setCharmap: extern(FT_Set_Charmap) func (encoding: FTEncoding) -> Int
     getCharIndex: extern(FT_Get_Char_Index) func (charcode: ULong) -> UInt
     getFirstChar: extern(FT_Get_First_Char) func (agindex: UInt*) -> ULong
     getNextChar: extern(FT_Get_Next_Char) func (char_code: ULong, agindex: UInt*) -> ULong
-    getNameIndex: extern(FT_Get_Name_Index) func (glyph_name: String) -> UInt
+    getNameIndex: extern(FT_Get_Name_Index) func (glyph_name: CString) -> UInt
     getSubGlyphInfo: extern(FT_Get_SubGlyph_Info) func (sub_index: UInt, p_index: Int*, p_flags: FTSubGlyphFlag*, p_arg1, p_arg2: Int*, p_transform: FTMatrix*) -> Int
     getFSTypeFlags: extern(FT_Get_FSType_Flags) func -> FTFSTypeFlag
     
